@@ -1,23 +1,45 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import { useStore } from '@/stores'
+import jwt_decode from "jwt-decode";
+import keys from '@/keys'
+import moment from 'moment'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/",
+      path: '/',
       name: "home",
-      component: HomeView,
+      component: () => import("../views/HomeView.vue")
     },
     {
-      path: "/about",
-      name: "about",
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import("../views/AboutView.vue"),
+      path: "/login",
+      name: "login",
+      component: () => import("../views/auth/Login.vue"),
     },
+    {
+      path: '/about',
+      name: "about",
+      component: () => import("../views/AboutView.vue")
+    }
   ],
 });
+
+router.beforeEach((to, from, next) => {
+  const store = useStore()
+  const accessToken = localStorage.getItem(keys.LOCAL_STORAGE.access_token)
+  if (accessToken) {
+    const parseToken = jwt_decode(accessToken)
+    if (parseToken.exp < moment().unix()) {
+      store.auth(false)
+      localStorage.removeItem(keys.LOCAL_STORAGE.access_token)
+    } else {
+      store.auth(true)
+    }
+  }
+
+  if (to.name !== 'login' && !store.isAuth) next({ name: 'login' })
+  else next()
+})
 
 export default router;
