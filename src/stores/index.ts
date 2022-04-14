@@ -8,7 +8,6 @@ export const useStore = defineStore('main', {
   },
   actions: {
     auth(val: boolean) {
-      console.log(val)
       this.isAuth = val
     }
   }

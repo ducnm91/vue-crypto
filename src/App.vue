@@ -7,7 +7,6 @@ import Alert from "./components/commons/Alert.vue";
   <Alert />
   <RouterView />
 </template>
-
-<style>
-@import "@/assets/base.css";
+<style lang="scss">
+@import "@/assets/sass/app.scss";
 </style>

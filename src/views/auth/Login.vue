@@ -23,8 +23,8 @@
 import Repository from '@/repositories/RepositoryFactory';
 import jwt_decode from "jwt-decode";
 import moment from "moment";
-import keys from '@/keys'
-import { useStore } from '@/stores'
+import keys from '@/keys';
+import { useStore } from '@/stores';
 
 const AuthRepository = Repository.get("auth");
 export default {
@@ -47,15 +47,12 @@ export default {
   methods: {
     login() {
       AuthRepository.login(this.email, this.password).then(res => {
-        console.log(res)
         if (res) {
           const token = res.data.token
           localStorage.setItem(keys.LOCAL_STORAGE.access_token, token)
           this.store.auth(true)
           this.$router.push('/about')
-          console.log(token)
-          console.log(token.exp)
-          console.log(moment(token.exp).format('MMMM Do YYYY, h:mm:ss a'))
+          // console.log(moment(token.exp).format('MMMM Do YYYY, h:mm:ss a'))
           // console.log(key)
         }
         

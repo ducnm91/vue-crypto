@@ -1,15 +1,15 @@
 import axios from "axios";
-import config from "@/config/index"
+import config from "@/config/env/index"
 
 const baseDomain = config.api;
-const baseURL = `${baseDomain}`; // Incase of /api/v1;
+// const baseURL = `${baseDomain}`; // Incase of /api/v1;
 
 
 
 // ALL DEFUALT CONFIGURATION HERE
 
 const instance = axios.create({
-  baseURL,
+  // baseURL,
   headers: {
     // "Authorization": "Bearer xxxxx"
   }
