@@ -20,8 +20,8 @@
       </div>
       <div class="col-lg-2">
         <p className="d-flex justify-content-between" v-if="minVolume">
-          <span>{{ volumeRange?.min ? numeral(volumeRange.min).format('$0,0[.]00 a') : numeral(minVolume).format('$0,0[.]00 a') }}</span>-
-          <span>{{ volumeRange?.max ? numeral(volumeRange.max).format('$0,0[.]00 a') : numeral(maxVolume).format('$0,0[.]00 a') }}</span>
+          <span>{{ volumeRange?.min ? formatRange(volumeRange.min) : formatRange(minVolume) }}</span>-
+          <span>{{ volumeRange?.max ? formatRange(volumeRange.max) : formatRange(maxVolume) }}</span>
         </p>
         <vue-slider
           v-model="volumeRange"
@@ -56,9 +56,10 @@ export default ({
       platforms: [],
       platform: null,
       currentToken: null,
+      getByList: getByList,
       getBy: getByList[0],
+      orderByList: orderByList,
       orderBy: null,
-      volumeRange: [0, 0],
       isSupportLoan: false
     }
   },
@@ -73,13 +74,24 @@ export default ({
         })
       }
       return []
-    }
-  },
-  watch: {
-    'coinStore.coins'(val) {
-      if(val.length) {
-        this.volumeRange= [_.minBy(this.coinStore.coins, "total_volume").total_volume, _.maxBy(this.coinStore.coins, "total_volume").total_volume]
+    },
+    minVolume(): any {
+      if (this.coinStore.coins.length) {
+        return _.minBy(this.coinStore.coins, "total_volume").total_volume
       }
+      return 0
+    },
+    maxVolume(): any {
+      if (this.coinStore.coins.length) {
+        return _.maxBy(this.coinStore.coins, "total_volume").total_volume
+      }
+      return 0
+    },
+    volumeRange():any {
+      if (this.minVolume && this.maxVolume) {
+        return [this.minVolume, this.maxVolume]
+      }
+      return [0, 10]
     }
   },
   methods: {
@@ -99,6 +111,9 @@ export default ({
     },
     changeSupportLoan(event) {
       this.isSupportLoan = event.target.checked
+    },
+    formatRange(val) {
+      return numeral(val).format('$0,0[.]00 a')
     }
   },
   mounted() {

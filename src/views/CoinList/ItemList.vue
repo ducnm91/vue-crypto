@@ -46,7 +46,6 @@
             .format("0.00%")
         }}
       </span>
-      }
     </td>
     <td>
       <span
@@ -63,7 +62,6 @@
             .format("0.00%")
         }}
       </span>
-      }
     </td>
     <td>{{ numeral(total_volume).format("$0,0[.]00 a") }}</td>
     <td>
