@@ -20,90 +20,93 @@
         </tr>
       </thead>
       <tbody>
-        <ItemList v-for="coin in coinsStore.coins" :key="coin.id" v-bind="coin" />
+        <ItemList v-for="coin in sortedCoins" :key="coin.id" v-bind="coin" />
       </tbody>
     </table>
   </div>
-  
 </template>
 <script lang="ts">
-import _ from 'lodash';
-import { getByList, orderByList } from '@/config/coins';
-import {useCoinStore} from '@/stores/coin'
+import _ from "lodash";
+import { getByList, orderByList } from "@/config/coins";
+import { useCoinStore } from "@/stores/coin";
 
-import Filter from './Filter.vue';
-import ItemList from './ItemList.vue';
+import Filter from "./Filter.vue";
+import ItemList from "./ItemList.vue";
 
 export default {
   components: {
     Filter,
-    ItemList
+    ItemList,
   },
   setup() {
-    const coinsStore = useCoinStore()
+    const coinsStore = useCoinStore();
 
     return {
       // you can return the whole store instance to use it in the template
       coinsStore,
-    }
+    };
   },
   data() {
     return {
-      sortedCoins: [],
-      optionFilter: {
-        platform: '',
-        orderBy: '',
-        getBy: getByList[0].value,
-        idToken: '',
-        volume: '',
-        isSupportLoan: false
-      }
-    }
+    };
   },
   computed: {
     coins() {
-      return this.counterStore.coins
+      return this.coinsStore.coins;
+    },
+    optionFilter() {
+      return this.coinsStore.optionFilter
     },
     sortedCoins() {
-      let newSortedCoins = [...this.coins]
-      if (this.optionFilter.idToken) {
-        newSortedCoins  = _.filter(newSortedCoins, { 'id': this.optionFilter.idToken })
+      let newSortedCoins = [...this.coins];
+      if (this.optionFilter.baseToken) {
+        newSortedCoins = _.filter(newSortedCoins, {
+          id: this.optionFilter.baseToken.value,
+        });
       }
 
-      if(this.optionFilter.volume && this.optionFilter.volume.min) {
-        newSortedCoins  = _.filter(newSortedCoins, function(o) { return o.total_volume >= this.optionFilter.volume.min && o.total_volume <= this.optionFilter.volume.max })
+      if (this.optionFilter.volumeRange && this.optionFilter.volumeRange[0]) {
+        newSortedCoins = _.filter(newSortedCoins, (o) => {
+          return (
+            o.total_volume >= this.optionFilter.volumeRange[0] &&
+            o.total_volume <= this.optionFilter.volumeRange[1]
+          );
+        });
       }
 
       if (this.optionFilter.orderBy) {
-        newSortedCoins = _.orderBy(newSortedCoins, [this.optionFilter.orderBy], ['desc'])
+        newSortedCoins = _.orderBy(
+          newSortedCoins,
+          [this.optionFilter.orderBy.value],
+          ["desc"]
+        );
       }
 
-      if(this.optionFilter.isSupportLoan) {
-        newSortedCoins = _.filter(newSortedCoins, { 'isSupportLoan': this.optionFilter.isSupportLoan })
+      if (this.optionFilter.isSupportLoan) {
+        newSortedCoins = _.filter(newSortedCoins, {
+          isSupportLoan: this.optionFilter.isSupportLoan,
+        });
       }
 
-      return newSortedCoins
-    }
+      return newSortedCoins;
+    },
   },
   methods: {
     getCoin() {
-      this.coinsStore.status = 'loading'
-      this.coinsStore.getCoinsWidthRelatedDataAsync(this.optionFilter)
-    },
-    setFilter(val) {
-      this.optionFilter = val
+      this.coinsStore.status = "loading";
+      this.coinsStore.getCoinsWidthRelatedDataAsync(this.optionFilter);
     }
   },
   created() {
-    this.getCoin()
+    this.getCoin();
   },
   watch: {
-    'optionFilter.getBy'() {
-      this.getCoin()
+    'optionFilter.getBy': function (newVal, oldVal) {
+      this.getCoin();
     },
-    'optionFilter.platform'() {
-      this.getCoin()
+    'optionFilter.platform': function (newVal, oldVal) {
+      this.getCoin();
     }
   }
-}
+};
 </script>

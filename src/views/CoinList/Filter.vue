@@ -3,31 +3,41 @@
     <h3>Get by:</h3>
     <div class="row filter mb-4 align-items-center">
       <div class="col-lg-2">
-        <vue-select :options="getByList" v-model="getBy"/>
+        <vue-select :options="getByList" v-model="optionFilter.getBy"/>
       </div>
       <div class="col-lg-2">
-        <vue-select :options="platforms" v-model="platform" />
+        <vue-select :options="platforms" v-model="optionFilter.platform" />
       </div>
     </div>
 
     <h3>Filter By:</h3>
     <div class="row filter mb-4 align-items-center">
       <div class="col-lg-2">
-        <vue-select :options="coinsToSearch" v-model="currentToken" />
+        <vue-select :options="coinsToSearch" v-model="optionFilter.baseToken" />
       </div>
       <div class="col-lg-2">
-        <vue-select :options="orderByList" v-model="orderBy" />
+        <vue-select :options="orderByList" v-model="optionFilter.orderBy" />
       </div>
       <div class="col-lg-2">
         <p className="d-flex justify-content-between" v-if="minVolume">
-          <span>{{ volumeRange?.min ? formatRange(volumeRange.min) : formatRange(minVolume) }}</span>-
-          <span>{{ volumeRange?.max ? formatRange(volumeRange.max) : formatRange(maxVolume) }}</span>
+          <span>{{ formatRange(minVolume) }}</span>-
+          <span>{{ formatRange(maxVolume) }}</span>
         </p>
         <vue-slider
-          v-model="volumeRange"
+          v-model="optionFilter.volumeRange"
+          :min="minVolume"
+          :max="maxVolume"
           :tooltip-formatter="formatTooltip"
-          v-if="maxVolume"
+          v-if="minVolume && optionFilter.volumeRange[0]"
         />
+      </div>
+      <div class="col-lg-2">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" v-model="optionFilter.isSupportLoan" :true-value="true" :false-value="false" id="flexCheckDefault">
+          <label class="form-check-label" for="flexCheckDefault">
+            Support loan
+          </label>
+        </div>
       </div>
     </div>
   </div>
@@ -54,13 +64,16 @@ export default ({
   data() {
     return {
       platforms: [],
-      platform: null,
-      currentToken: null,
       getByList: getByList,
-      getBy: getByList[0],
       orderByList: orderByList,
-      orderBy: null,
-      isSupportLoan: false
+      optionFilter: {
+        getBy: getByList[0],
+        orderBy: null,
+        platform: null,
+        baseToken: null,
+        volumeRange: [0, 0],
+        isSupportLoan: false
+      }
     }
   },
   computed: {
@@ -86,18 +99,26 @@ export default ({
         return _.maxBy(this.coinStore.coins, "total_volume").total_volume
       }
       return 0
+    }
+  },
+  watch: {
+    minVolume(min) {
+      this.changeVolumeRange(min, this.optionFilter.volumeRange[1])
     },
-    volumeRange():any {
-      if (this.minVolume && this.maxVolume) {
-        return [this.minVolume, this.maxVolume]
-      }
-      return [0, 10]
+    maxVolume(max) {
+      this.changeVolumeRange(this.optionFilter.volumeRange[0], max)
+    },
+    optionFilter: {
+      handler(val) {
+        this.coinStore.updateOptionFilter(val)
+      },
+      deep: true
     }
   },
   methods: {
     getCategories() {
-      CoingeckoRepository.getCategories().then((res) => {
-        this.platforms = res.data.map((platform) => {
+      CoingeckoRepository.getCategories().then((res: any) => {
+        this.platforms = res.data.map((platform: any) => {
           return {
             value: platform.id,
             label: platform.name,
@@ -106,28 +127,18 @@ export default ({
           
       });
     },
-    formatTooltip(value) {
+    formatTooltip(value: number) {
       return numeral(value).format('$0,0[.]00 a')
     },
-    changeSupportLoan(event) {
-      this.isSupportLoan = event.target.checked
-    },
-    formatRange(val) {
+    formatRange(val: number) {
       return numeral(val).format('$0,0[.]00 a')
+    },
+    changeVolumeRange(min: number, max: number) {
+      this.optionFilter.volumeRange = [min, max]
     }
   },
   mounted() {
     this.getCategories()
-    // this.$watch([this.platform, this.orderBy, this.getBy, this.currentToken, this.volumeRange, this.isSupportLoan], () => { 
-    //   this.changeFilter({
-    //     platform: this.platform?.value,
-    //     orderBy: this.orderBy?.value,
-    //     getBy: this.getBy?.value,
-    //     idToken: this.currentToken?.value,
-    //     volume: this.volumeRange,
-    //     isSupportLoan
-    //   });
-    // });
   }
 })
 </script>

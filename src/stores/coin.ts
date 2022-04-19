@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-import { stableCoins, binanceCoins, binanceLoanCoins, unFollowCoins } from '@/config/coins';
+import { stableCoins, binanceCoins, binanceLoanCoins, unFollowCoins, getByList, orderByList } from '@/config/coins';
 import RepositoryFactory from '@/repositories/RepositoryFactory';
 
 const CoingeckoRepository = RepositoryFactory.get('coingecko');
@@ -18,6 +18,14 @@ export const useCoinStore = defineStore({
   id: "coin",
   state: () => ({
     coins: [],
+    optionFilter: {
+      getBy: getByList[0],
+      orderBy: null,
+      platform: null,
+      baseToken: null,
+      volumeRange: [0, 0],
+      isSupportLoan: false
+    },
     status: 'idle',
     baseToken: {
       id: 'bitcoin',
@@ -25,8 +33,14 @@ export const useCoinStore = defineStore({
     }
   }),
   actions: {
-    async getCoinsWidthRelatedDataAsync({getBy, platform}:{getBy: string, platform: string}) {
-      const response = await CoingeckoRepository.getCoinsWidthRelatedData(getBy, platform);
+    updateOptionFilter(val: any) {
+      this.optionFilter = val
+    },
+    async getCoinsWidthRelatedDataAsync({getBy, platform}:{getBy: any, platform: any}) {
+      const getByValue = (typeof getBy === 'object' && getBy !== null) ? getBy.value : getBy
+      const getPlatformValue = (typeof platform === 'object' && platform !== null) ? platform.value : platform
+
+      const response = await CoingeckoRepository.getCoinsWidthRelatedData(getByValue, getPlatformValue);
       // The value we return becomes the `fulfilled` action payload
       this.status = 'idle'
       const binanceCoinsData = response.data.filter((coin:any) => {
