@@ -20,7 +20,7 @@
         </tr>
       </thead>
       <tbody>
-        <ItemList v-for="coin in sortedCoins" :key="coin.id" v-bind="coin" />
+        <ItemList v-for="coin in sortedCoins" :key="coin.id" v-bind="coin" @click="goDetail(coin.symbol)" />
       </tbody>
     </table>
   </div>
@@ -95,6 +95,9 @@ export default {
     getCoin() {
       this.coinsStore.status = "loading";
       this.coinsStore.getCoinsWidthRelatedDataAsync(this.optionFilter);
+    },
+    goDetail(symbol) {
+      this.$router.push(`/coins/${symbol}`)
     }
   },
   created() {

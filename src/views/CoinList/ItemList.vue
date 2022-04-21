@@ -1,7 +1,7 @@
 <template>
   <tr>
     <td>
-      <router-link :to="`/coins/${id}`">
+      <router-link :to="`/coins/${symbol}`">
         <img :src="image" width="25" height="25" alt="" />
         {{ symbol }} - {{ name }}
       </router-link>
@@ -78,6 +78,7 @@ import numeral from "numeral";
 import { getZeroDecimal } from "@/utils/formatNumber";
 export default {
   props: [
+    "id",
     "image",
     "symbol",
     "name",
