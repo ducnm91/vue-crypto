@@ -46,7 +46,7 @@ export const useCoinStore = defineStore({
       const binanceCoinsData = response.data.filter((coin:any) => {
         return coin.market_cap_rank && 
                 stableCoins.indexOf(coin.symbol) < 0 && 
-                binanceCoins.indexOf(coin.symbol) >= 0 &&
+                // binanceCoins.indexOf(coin.symbol) >= 0 &&
                 unFollowCoins.indexOf(coin.symbol) < 0
       });
 

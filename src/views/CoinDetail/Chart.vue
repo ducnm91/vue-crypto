@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <p>{{ symbol }}</p>
+  <div class="wrap">
+    <Ticker :symbol="pairToken" />
     <div ref="chartRef"></div>
   </div>
 </template>
@@ -9,12 +9,18 @@ import { quoteTokenList, intervalList } from "@/config/coins";
 import Highcharts from "highcharts/highstock";
 import loadIndicatorsAll from "highcharts/indicators/indicators-all";
 import RepositoryFactory from "@/repositories/RepositoryFactory";
+import moment from 'moment'
+import conf from "@/config/env"
+import Ticker from './Ticker.vue'
 
 loadIndicatorsAll(Highcharts);
 const BinanceRepository = RepositoryFactory.get("binance");
 
 export default {
   props: ["symbol", "interval"],
+  components: {
+    Ticker
+  },
   data() {
     return {
       quoteToken: "usdt",
@@ -23,22 +29,22 @@ export default {
         offset: 50,
       },
       seriesRsi: [],
+      socket: null,
+      chart: null
     };
   },
   methods: {
-    initChart() {
-      Highcharts.stockChart(this.$refs.chartRef, {
+    initChart(parseData) {
+      const that = this
+      this.chart = Highcharts.stockChart(this.$refs.chartRef, {
         chart: {
           events: {
             load: function (e) {
-              // setChartInstance(e.target);
-              // const series = this.series[0];
-              // socket.addEventListener('message', function(event) {
-              //   const rawData = JSON.parse(event.data)
-              //   const candleData = [rawData['E'], Number(rawData['k']['o']), Number(rawData['k']['c']), Number(rawData['k']['h']), Number(rawData['k']['l'])]
-              //   series.addPoint(candleData, true, true);
-              // });
-            },
+              const series = this.series[0]
+
+              that.initSocket()
+              that.streamData(series)
+            }
           },
           height: "600px",
         },
@@ -61,10 +67,10 @@ export default {
 
         plotOptions: {
           candlestick: {
-            color: "rgb(222, 95, 95)",
-            lineColor: "rgb(222, 95, 95)",
-            upColor: "rgb(49, 186, 160)",
-            upLineColor: "rgb(49, 186, 160)",
+            color: "#de5f5f",
+            lineColor: "#de5f5f",
+            upColor: "#31baa0",
+            upLineColor: "#31baa0",
           },
           // sma: {
           //   color: 'yellow'
@@ -84,7 +90,7 @@ export default {
             type: "candlestick",
             id: "aapl",
             name: `${this.pairToken}`,
-            data: this.chartData,
+            data: parseData,
           },
           ...this.seriesRsi,
 
@@ -137,48 +143,84 @@ export default {
       BinanceRepository.getCandlestickData(
         this.pairToken.replace("-", ""),
         this.interval,
-        144
+        90
       ).then((res) => {
-        this.chartData = res.data.map((item) => {
-          return item.map((i) => Number(i));
+        const parseData = res.data.map((item) => {
+          const timeOpen = item[0]
+          const openPrice = Number(item[1])
+          const highPrice = Number(item[2])
+          const lowPrice = Number(item[3])
+          const closePrice = Number(item[4])
+          return [timeOpen, openPrice, highPrice, lowPrice, closePrice]
         });
-        this.initChart()
+
+        this.initChart(parseData)
+      });
+    },
+    initSocket() {
+      const symbol = this.pairToken.replace("-", "").toLowerCase()
+      this.socket = new WebSocket(`${conf.socket_binance}/ws/${symbol}@kline_${this.interval}`)
+    },
+    streamData(series) {
+      this.socket.addEventListener('message', function (event) {
+        const lastPoint = series.data[series.data.length - 1];
+
+        const rawData = JSON.parse(event.data)
+        const timeOpen = rawData['k']['t']
+        const openPrice = Number(rawData['k']['o'])
+        const highPrice = Number(rawData['k']['h'])
+        const lowPrice = Number(rawData['k']['l'])
+        const closePrice = Number(rawData['k']['c'])
+        const candleData = [timeOpen, openPrice, highPrice, lowPrice, closePrice]
+
+        if (lastPoint.options.x !== timeOpen) {
+          series.addPoint(candleData, true, true);
+        } else {
+          lastPoint.update(candleData, true);
+        }
       });
     }
   },
   computed: {
     pairToken() {
-      let pair = `${this.symbol}-${this.quoteToken}`;
+      if (this.symbol && this.quoteToken) {
+        let pair = `${this.symbol}-${this.quoteToken}`;
 
-      if (pair.indexOf("eth") >= 0 && pair.indexOf("btc") >= 0) {
-        pair = "eth-btc";
+        if (pair.indexOf("eth") >= 0 && pair.indexOf("btc") >= 0) {
+          pair = "eth-btc";
+        }
+
+        if (pair.indexOf("bnb") >= 0 && pair.indexOf("btc") >= 0) {
+          pair = "bnb-btc";
+        }
+
+        if (pair.indexOf("bnb") >= 0 && pair.indexOf("eth") >= 0) {
+          pair = "bnb-eth";
+        }
+
+        return pair.toUpperCase();
       }
-
-      if (pair.indexOf("bnb") >= 0 && pair.indexOf("btc") >= 0) {
-        pair = "bnb-btc";
-      }
-
-      if (pair.indexOf("bnb") >= 0 && pair.indexOf("eth") >= 0) {
-        pair = "bnb-eth";
-      }
-
-      return pair.toUpperCase();
+      return null
     },
-  },
-  mounted() {
-    
   },
   watch: {
     symbol() {
-      if (this.symbol !== quoteTokenList[0].value) {
-        this.quoteToken = quoteTokenList[0].value;
-      } else {
-        this.quoteToken = quoteTokenList[1].value;
-      }
+      // if (this.symbol !== quoteTokenList[0].value) {
+      //   this.quoteToken = quoteTokenList[0].value;
+      // } else {
+      //   this.quoteToken = quoteTokenList[1].value;
+      // }
     },
-    pairToken() {
-      this.getDataChart()
+    pairToken(val) {
+      if (val) {
+        this.getDataChart()
+      }
     }
   },
+  mounted() {
+  },
+  beforeDestroy() {
+    this.socket.close()
+  }
 };
 </script>

@@ -35,7 +35,7 @@
         <div class="form-check">
           <input class="form-check-input" type="checkbox" v-model="optionFilter.isSupportLoan" :true-value="true" :false-value="false" id="flexCheckDefault">
           <label class="form-check-label" for="flexCheckDefault">
-            Support loan
+            Support loan Binance
           </label>
         </div>
       </div>
