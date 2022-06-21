@@ -25,7 +25,7 @@ export default {
   getListTrending() {
     return Client.get(`${baseDomain}/search/trending`);
   },
-  getCategories(order = 'market_cap_change_24h_desc') {
+  getCategories(order = 'market_cap_desc') {
     return Client.get(`${baseDomain}/coins/categories?order=${order}`);
   }
 };

@@ -2,7 +2,7 @@
   <div class="ticker">
     <div class="row">
       <div class="col-lg-2">{{ symbol }}</div>
-      <div class="col-lg-10">
+      <div class="col-lg-10 d-flex">
         <div class="d-flex flex-column">
           <div class="label">Price</div>
           <div class="value">
@@ -99,3 +99,8 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+.ticker {
+  min-height: 48px;
+}
+</style>

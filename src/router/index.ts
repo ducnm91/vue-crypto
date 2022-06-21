@@ -10,7 +10,7 @@ const router = createRouter({
     {
       path: '/',
       name: "home",
-      component: () => import("../views/CoinList/index.vue")
+      component: () => import("../views/HomeView.vue")
     },
     {
       path: "/login",
@@ -27,24 +27,29 @@ const router = createRouter({
       name: "coin-detail",
       component: () => import("../views/CoinDetail/index.vue")
     },
+    {
+      path: '/categories',
+      name: "category",
+      component: () => import("../views/Category.vue")
+    },
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  const store = useStore()
-  const accessToken = localStorage.getItem(keys.LOCAL_STORAGE.access_token)
-  if (accessToken) {
-    const parseToken = jwt_decode(accessToken)
-    if (parseToken.exp < moment().unix()) {
-      store.auth(false)
-      localStorage.removeItem(keys.LOCAL_STORAGE.access_token)
-    } else {
-      store.auth(true)
-    }
-  }
+// router.beforeEach((to, from, next) => {
+//   const store = useStore()
+//   const accessToken = localStorage.getItem(keys.LOCAL_STORAGE.access_token)
+//   if (accessToken) {
+//     const parseToken = jwt_decode(accessToken)
+//     if (parseToken.exp < moment().unix()) {
+//       store.auth(false)
+//       localStorage.removeItem(keys.LOCAL_STORAGE.access_token)
+//     } else {
+//       store.auth(true)
+//     }
+//   }
 
-  if (to.name !== 'login' && !store.isAuth) next({ name: 'login' })
-  else next()
-})
+//   if (to.name !== 'login' && !store.isAuth) next({ name: 'login' })
+//   else next()
+// })
 
 export default router;

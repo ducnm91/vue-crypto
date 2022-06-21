@@ -1,10 +1,17 @@
-<script setup lang="ts">
+<script>
 import { RouterLink, RouterView } from "vue-router";
 import Alert from "./components/commons/Alert.vue";
+import MainMenu from "./components/MainMenu.vue";
+export default {
+  components: {
+    MainMenu
+  }
+}
 </script>
 
 <template>
-  <Alert />
+  <!-- <Alert /> -->
+  <MainMenu />
   <RouterView />
 </template>
 <style lang="scss">

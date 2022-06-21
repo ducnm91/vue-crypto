@@ -1,13 +1,14 @@
 <template>
   <div class="wrap">
     <Ticker :symbol="pairToken" />
-    <div ref="chartRef"></div>
+    <div ref="chartRef" class="chart-wrapper"></div>
   </div>
 </template>
 <script>
-import { quoteTokenList, intervalList } from "@/config/coins";
+import { indicatorRelativeStrengthIndex, indicatorBollingerBands } from '@d3fc/d3fc-technical-indicator';
 import Highcharts from "highcharts/highstock";
 import loadIndicatorsAll from "highcharts/indicators/indicators-all";
+import { quoteTokenList, intervalList } from "@/config/coins";
 import RepositoryFactory from "@/repositories/RepositoryFactory";
 import moment from 'moment'
 import conf from "@/config/env"
@@ -16,8 +17,11 @@ import Ticker from './Ticker.vue'
 loadIndicatorsAll(Highcharts);
 const BinanceRepository = RepositoryFactory.get("binance");
 
+const rsi = indicatorRelativeStrengthIndex()
+    .period(14);
+
 export default {
-  props: ["symbol", "interval"],
+  props: ["symbol", "interval", "hasRsi"],
   components: {
     Ticker
   },
@@ -25,10 +29,6 @@ export default {
     return {
       quoteToken: "usdt",
       chartData: [],
-      yAxisRsi: {
-        offset: 50,
-      },
-      seriesRsi: [],
       socket: null,
       chart: null
     };
@@ -42,8 +42,7 @@ export default {
             load: function (e) {
               const series = this.series[0]
 
-              that.initSocket()
-              that.streamData(series)
+              that.initSocket(series)
             }
           },
           height: "600px",
@@ -155,13 +154,15 @@ export default {
         });
 
         this.initChart(parseData)
+        const closePrices = parseData.map(item => item[4])
+        
+        console.log(rsi(closePrices))
       });
     },
-    initSocket() {
+    initSocket(series) {
       const symbol = this.pairToken.replace("-", "").toLowerCase()
       this.socket = new WebSocket(`${conf.socket_binance}/ws/${symbol}@kline_${this.interval}`)
-    },
-    streamData(series) {
+
       this.socket.addEventListener('message', function (event) {
         const lastPoint = series.data[series.data.length - 1];
 
@@ -202,6 +203,40 @@ export default {
       }
       return null
     },
+    yAxisRsi() {
+      if (this.hasRsi) {
+        return [
+          {
+            offset: 50,
+            height: "48%",
+          },
+          {
+            offset: 50,
+            height: "48%",
+            top: "52%",
+          },
+        ]
+      }
+      
+      return {
+        offset: 50,
+      }
+    },
+    seriesRsi() {
+      if (this.hasRsi) {
+        return [
+          {
+            yAxis: 1,
+            type: "rsi",
+            linkedTo: "aapl",
+            params: {
+              period: 14
+            }
+          }
+        ]
+      }
+      return []
+    }
   },
   watch: {
     symbol() {
@@ -224,3 +259,8 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+  .chart-wrapper {
+    min-height: 600px;
+  }
+</style>

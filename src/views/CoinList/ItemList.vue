@@ -31,6 +31,7 @@
         }}
       </span>
     </td>
+    <td>{{ formatRsi(rsi_1h) }}</td>
     <td>
       <span
         :class="
@@ -47,6 +48,7 @@
         }}
       </span>
     </td>
+    <td>{{ formatRsi(rsi_24h) }}</td>
     <td>
       <span
         :class="
@@ -63,6 +65,7 @@
         }}
       </span>
     </td>
+    <td>{{ formatRsi(rsi_7d) }}</td>
     <td>{{ numeral(total_volume).format("$0,0[.]00 a") }}</td>
     <td>
       {{ minedSupply ? numeral(minedSupply).format("0.00%") : "infinite" }}
@@ -73,7 +76,7 @@
     <td>{{ numeral(market_cap_rank).format("0o") }}</td>
   </tr>
 </template>
-<script lang="ts">
+<script>
 import numeral from "numeral";
 import { getZeroDecimal } from "@/utils/formatNumber";
 export default {
@@ -91,14 +94,20 @@ export default {
     "total_volume",
     "minedSupply",
     "market_cap_rank",
-    "isSupportLoan"
+    "isSupportLoan",
+    "rsi_1h",
+    "rsi_24h",
+    "rsi_7d"
   ],
   methods: {
-    numeral(val: any) {
+    numeral(val) {
       return numeral(val)
     },
-    getZeroDecimal(val: any) {
+    getZeroDecimal(val) {
       return getZeroDecimal(val)
+    },
+    formatRsi(val) {
+      return Math.trunc(val * 100) / 100
     }
   }
 };

@@ -90,13 +90,15 @@ export default ({
     },
     minVolume(): any {
       if (this.coinStore.coins.length) {
-        return _.minBy(this.coinStore.coins, "total_volume").total_volume
+        const minToken = _.minBy(this.coinStore.coins, "total_volume")
+        return minToken ? minToken.total_volume : 0
       }
       return 0
     },
     maxVolume(): any {
       if (this.coinStore.coins.length) {
-        return _.maxBy(this.coinStore.coins, "total_volume").total_volume
+        const maxToken = _.maxBy(this.coinStore.coins, "total_volume")
+        return maxToken? maxToken.total_volume : 0
       }
       return 0
     }

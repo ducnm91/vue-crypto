@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container-fluid">
     <Filter />
     <h3>All coin</h3>
     <p v-if="coinsStore.status === 'loading'">Loading...</p>
@@ -11,8 +11,11 @@
           <th>Ath</th>
           <th>Ath change(%)</th>
           <th>1h</th>
+          <th>Rsi 1h</th>
           <th>24h</th>
+          <th>Rsi 12h</th>
           <th>7d</th>
+          <th>Rsi 7d</th>
           <th>24h Volume</th>
           <th>Mined supply</th>
           <th>Support Loan</th>
@@ -25,7 +28,7 @@
     </table>
   </div>
 </template>
-<script lang="ts">
+<script>
 import _ from "lodash";
 import { getByList, orderByList } from "@/config/coins";
 import { useCoinStore } from "@/stores/coin";

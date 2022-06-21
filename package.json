@@ -12,8 +12,10 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@d3fc/d3fc-technical-indicator": "^8.1.0",
     "axios": "^0.26.1",
     "bootstrap": "^5.1.3",
+    "d3-array": "^3.1.6",
     "highcharts": "^10.0.0",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
