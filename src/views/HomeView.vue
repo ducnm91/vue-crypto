@@ -21,7 +21,7 @@
 import CoinList from './CoinList/index.vue'
 import CompareTokensActiveWithBtc  from '@/components/CompareTokensActiveWithBtc.vue'
 import RepositoryFactory from '@/repositories/RepositoryFactory';
-const CoinmarRepository = RepositoryFactory.get('coinmarket');
+const BinanceRepository = RepositoryFactory.get('binance');
 
 export default {
   components: {
@@ -29,7 +29,7 @@ export default {
     CompareTokensActiveWithBtc
   },
   mounted() {
-    CoinmarRepository.getCategories().then(res => {
+    BinanceRepository.getFutureTransactionHistory().then(res => {
       console.log(res)
     })
   },

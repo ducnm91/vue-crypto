@@ -1,5 +1,12 @@
 import Client from './Clients/AxiosClient';
+import CryptoJS from "crypto-js";
+import moment from 'moment';
+
 const baseDomain = 'https://api.binance.com/api/v3';
+
+const publicApi = "oZ63eeozwVruVO19Sg69Da9RfdVndcWrDdf3X4iPamEx1aUDiN6YjohJJHHi2Wkg";
+const secretApi = "oLaYdCzqzSaQUZ53JBuNTf0UbtjvRLZ1LfTufHiBw90bVJL70QyTTpDXdslcmmpx"
+
 export default {
   // get list token pair exchange
   // Ex symbol: ETHBTC
@@ -29,6 +36,19 @@ export default {
   },
   getLastestPrice(symbol) {
     return Client.get(`${baseDomain}/ticker/price?symbol=${symbol}`);
+  },
+  getFutureTransactionHistory() {
+    const timestamp = moment().unix()
+    const queryString = `asset=BTCUSDT&size=100&current=1&recvWindow=5000&timestamp=${timestamp}`
+    const hash = CryptoJS.HmacSHA256(queryString, secretApi);
+    const signature = CryptoJS.enc.Base64.stringify(hash);
+    
+
+    return Client.get(`${baseDomain}/sapi/v1/futures/transfer?${queryString}&signature=${signature}`, {
+      headers: {
+        'X-MBX-APIKEY': publicApi
+      }
+    });
   }
   // getPost(id) {
   //     return Client.get(`${resource}/${id}`);
