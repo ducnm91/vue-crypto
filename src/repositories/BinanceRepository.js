@@ -4,8 +4,9 @@ import moment from 'moment';
 
 const baseDomain = 'https://api.binance.com/api/v3';
 
-const publicApi = "oZ63eeozwVruVO19Sg69Da9RfdVndcWrDdf3X4iPamEx1aUDiN6YjohJJHHi2Wkg";
-const secretApi = "oLaYdCzqzSaQUZ53JBuNTf0UbtjvRLZ1LfTufHiBw90bVJL70QyTTpDXdslcmmpx"
+const apiKey = "oZ63eeozwVruVO19Sg69Da9RfdVndcWrDdf3X4iPamEx1aUDiN6YjohJJHHi2Wkg";
+const apiSecret = "oLaYdCzqzSaQUZ53JBuNTf0UbtjvRLZ1LfTufHiBw90bVJL70QyTTpDXdslcmmpx";
+
 
 export default {
   // get list token pair exchange
@@ -37,18 +38,24 @@ export default {
   getLastestPrice(symbol) {
     return Client.get(`${baseDomain}/ticker/price?symbol=${symbol}`);
   },
-  getFutureTransactionHistory() {
-    const timestamp = moment().unix()
-    const queryString = `asset=BTCUSDT&size=100&current=1&recvWindow=5000&timestamp=${timestamp}`
-    const hash = CryptoJS.HmacSHA256(queryString, secretApi);
-    const signature = CryptoJS.enc.Base64.stringify(hash);
-    
+  async getFutureTransactionHistory() {
+    const serverTime = await Client.get(`${baseDomain}/time`);
+    const timestamp = serverTime.data.serverTime;
 
-    return Client.get(`${baseDomain}/sapi/v1/futures/transfer?${queryString}&signature=${signature}`, {
+    const queryString = `asset=USDT&recvWindow=40000&startTime=${moment().subtract(7, 'days').valueOf()}&timestamp=${timestamp}`;
+
+    const hash = CryptoJS.HmacSHA256(queryString, apiSecret);
+    const signature = CryptoJS.enc.Hex.stringify(hash);
+
+    const url = `https://api.binance.com/sapi/v1/futures/transfer?${queryString}&signature=${signature}`
+
+    console.log(url)
+
+    return Client.get(url, {
       headers: {
-        'X-MBX-APIKEY': publicApi
+        'X-MBX-APIKEY': apiKey
       }
-    });
+    })
   }
   // getPost(id) {
   //     return Client.get(`${resource}/${id}`);
